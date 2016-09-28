@@ -1,11 +1,12 @@
 request = require 'request'
 xml2js = require 'xml2js'
 
-makeUrl = (query, max_results=100, sort_by='lastUpdatedDate') ->
+makeUrl = (query, max_results=1000, sort_by='submittedDate') ->
     "http://export.arxiv.org/api/query?sortBy=#{sort_by}&max_results=#{max_results}&search_query=#{query}"
 
 key_map =
     author: 'au'
+    q: 'all'
     title: 'ti'
     category: 'cat'
 
@@ -29,6 +30,15 @@ coerceQuery = (query) ->
         querys.push [k, v].join(':')
     querys.join('+AND+')
 
+unique = (a, k) ->
+    a_ = []
+    known = {}
+    for i in a
+        if !known[i[k]]
+            known[i[k]] = true
+            a_.push i
+    return a_
+
 coerceEntry = (entry) -> {
     id: entry.id[0]
     updated: new Date entry.updated[0]
@@ -36,7 +46,7 @@ coerceEntry = (entry) -> {
     title: entry.title[0].trim().replace(/\s+/g, ' ')
     summary: entry.summary[0].trim().replace(/\s+/g, ' ')
     links: entry.link.map (link) -> {href: link['$']['href'], title: link['$']['title']}
-    authors: entry.author.map (author) -> {name: author['name'][0]}
+    authors: unique (entry.author.map (author) -> {name: author['name'][0]}), 'name'
     categories: entry.category.map (category) -> category['$']['term']
 }
 
