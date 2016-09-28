@@ -43,7 +43,13 @@ coerceEntry = (entry) -> {
 search = (query, cb) ->
     request.get makeUrl(coerceQuery(query)), (err, resp, data) ->
         xml2js.parseString data, (err, parsed) ->
-            cb err, parsed?.feed?.entry?.map coerceEntry
+            if err?
+                cb err
+            else
+                items = parsed?.feed?.entry?.map coerceEntry
+                total = Number parsed.feed['opensearch:totalResults'][0]['_']
+                console.log total
+                cb err, {items, total}
 
 module.exports = {
     search
