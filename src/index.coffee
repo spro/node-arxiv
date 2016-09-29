@@ -57,8 +57,9 @@ search = (query, cb) ->
                 cb err
             else
                 items = parsed?.feed?.entry?.map coerceEntry
+                items ||= []
                 total = Number parsed.feed['opensearch:totalResults'][0]['_']
-                console.log total
+                total ||= 0
                 cb err, {items, total}
 
 module.exports = {
